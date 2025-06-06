@@ -1,0 +1,39 @@
+FROM python:3.11-slim
+# ENV 
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV PIP_NO_CACHE_DIR=off
+
+# installing most used tools
+RUN apt-get update && \
+    apt-get install -y libffi-dev libxml2-dev libxslt-dev libssl-dev openssl autoconf g++ python3-dev curl git smbmap smbclient wget nmap netcat-openbsd ruby build-essential ruby-dev make
+
+WORKDIR /usr/src/crackmapexec
+RUN git clone https://github.com/byt3bl33d3r/CrackMapExec 
+WORKDIR /usr/src/crackmapexec/CrackMapExec
+RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN cargo --help
+COPY . .
+RUN pip install .
+# kerbrute
+RUN wget https://github.com/ropnop/kerbrute/releases/download/v1.0.3/kerbrute_linux_amd64 -O /bin/kerbrute
+RUN chmod 777 /bin/kerbrute
+# enum4linux
+RUN wget raw.githubusercontent.com/CiscoCXSecurity/enum4linux/refs/heads/master/enum4linux.pl -O /bin/enum4linux
+RUN chmod 777 /bin/enum4linux
+# evil-winrm & impacket
+RUN gem install evil-winrm
+RUN pip install impacket
+# Resonder
+WORKDIR /usr/src/
+RUN git clone https://gitlab.com/kalilinux/packages/responder
+WORKDIR /usr/src/responder
+RUN pip install -r requirements.txt
+RUN ln -s /usr/src/responder/Responder.py /bin/responder
+# important binary
+WORKDIR /CompiledBinaries/ 
+RUN wget https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/raw/refs/heads/master/Rubeus.exe
+RUN wget https://github.com/r3motecontrol/Ghostpack-CompiledBinaries/raw/refs/heads/master/Certify.exe
+# start 
+CMD [ "bash" ]
